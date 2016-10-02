@@ -10,4 +10,5 @@ First, write a *parser* for these, turning them into Erlang representations, suc
 ```
 {minus, {plus, {num, 2}, {num, 3}}, {num, 4}}
 ```
-which represents `((2+3)-4)`. We call these *exps*.
+which represents `((2+3)-4)`. We call these *exps*. Now write a number of functions:
+* An *evaluator*, which takes an *exp* and returns its value;

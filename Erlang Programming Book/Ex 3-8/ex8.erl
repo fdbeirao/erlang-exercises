@@ -1,16 +1,19 @@
 -module(ex8).
--export([parse/1]).
+-export([parse/1, evaluate/1]).
 
 %% Public API
 
 tokenize(Expr) ->
   tokenize(Expr, []).
 
-parse(Expr) ->
-  Tokenized = tokenize(Expr),
+parse(Str) ->
+  Tokenized = tokenize(Str),
   AggregatedNumbers = aggregate_numbers(Tokenized),
   ParsToLists = pars_to_list(AggregatedNumbers),
   parse_int(ParsToLists).
+
+evaluate(Expr) ->
+  evaluate_int(Expr).
 
 %% Private functions
 
@@ -82,7 +85,12 @@ find_matching_par_index([_|R], Index, Indent) -> find_matching_par_index(R, Inde
 
 parse_int({num, N}) -> {num, N};
 parse_int([{num, N}]) -> {num, N};
-%parse_int([{num, N1}, {dual_oper, Oper}, {num, N2}]) -> {Oper, {num, N1}, {num, N2}};
 parse_int([ExprA, {dual_oper, Oper}, ExprB]) -> {Oper, parse_int(ExprA), parse_int(ExprB)};
 parse_int([{sing_oper, Oper}, Expr]) -> {Oper, parse_int(Expr)};
 parse_int([Expr]) -> parse_int(Expr).
+
+evaluate_int({num, N}) -> N;
+evaluate_int({negative, Expr}) -> -1*evaluate_int(Expr);
+evaluate_int({plus, ExprA, ExprB}) -> evaluate_int(ExprA) + evaluate_int(ExprB);
+evaluate_int({minus, ExprA, ExprB}) -> evaluate_int(ExprA) - evaluate_int(ExprB);
+evaluate_int({multiply, ExprA, ExprB}) -> evaluate_int(ExprA) * evaluate_int(ExprB).
