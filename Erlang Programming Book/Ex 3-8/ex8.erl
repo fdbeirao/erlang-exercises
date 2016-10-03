@@ -3,9 +3,6 @@
 
 %% Public API
 
-tokenize(Expr) ->
-  tokenize(Expr, []).
-
 parse(Str) ->
   Tokenized = tokenize(Str),
   AggregatedNumbers = aggregate_numbers(Tokenized),
@@ -20,6 +17,9 @@ evaluate(Expr) ->
 %% tokenize() takes a string (list of ints) as input such as `((2+12)-5)`
 %% and returns a list of tokens: [{par, open}, {par, open}, {num, 2}, {oper, plus}, {num, 1}, {num, 2}, {par, close}, {oper, minus}, {num, 5}, {par, close}]
 
+tokenize(Expr) ->
+  tokenize(Expr, []).
+
 tokenize([], Tokens) -> lists:reverse(Tokens);
 tokenize([Char|Rest], Tokens) ->
   tokenize(Rest, [get_token(Char)|Tokens]).
@@ -30,6 +30,7 @@ get_token($+) -> {dual_oper, plus};
 get_token($-) -> {dual_oper, minus};
 get_token($*) -> {dual_oper, multiply};
 get_token($~) -> {sing_oper, negative};
+get_token($/) -> {dual_oper, divide};
 get_token(Num) when Num >= $0 andalso Num =< $9 -> {num, Num - $0}.
 
 %% aggregate_numbers() takes a token list such as [{num, 2}, {num, 5}, {oper, X}, {num, 3}, {num, 7}] 
@@ -65,14 +66,14 @@ calcNumericValue(ContiguousNumbers) ->
 %% pars_to_list() takes a list of tokens such as [{par, open}, {par, open}, {num, 2}, {oper, plus}, {num, 12}, {par, close}, {oper, minus}, {num, 5}, {par, close}]
 %% and returns a list of lists: [[{num,2}, {oper, plus}, {num, 12}], {oper, minus}, {num, 5}]
 
- pars_to_list(List) -> pars_to_list(List, []).
- pars_to_list([], Res) -> Res;
- pars_to_list([{par, open}|Rem], Res) -> 
-   MatchingParIndex = find_matching_par_index(Rem),
-   SubExpr = lists:sublist(Rem, MatchingParIndex -1),
-   NewRem = lists:sublist(Rem, MatchingParIndex + 1, length(Rem) - MatchingParIndex),
-   [pars_to_list(SubExpr)|Res] ++ pars_to_list(NewRem);
- pars_to_list([Elem|Rem], Acc) -> [Elem|pars_to_list(Rem, Acc)].
+pars_to_list(List) -> pars_to_list(List, []).
+pars_to_list([], Res) -> Res;
+pars_to_list([{par, open}|Rem], Res) -> 
+  MatchingParIndex = find_matching_par_index(Rem),
+  SubExpr = lists:sublist(Rem, MatchingParIndex -1),
+  NewRem = lists:sublist(Rem, MatchingParIndex + 1, length(Rem) - MatchingParIndex),
+  [pars_to_list(SubExpr)|Res] ++ pars_to_list(NewRem);
+pars_to_list([Elem|Rem], Acc) -> [Elem|pars_to_list(Rem, Acc)].
 
 find_matching_par_index(List) -> find_matching_par_index(List, 0, 0).
 find_matching_par_index([{par, close}|_], Index, 0) -> Index + 1;
@@ -84,7 +85,6 @@ find_matching_par_index([_|R], Index, Indent) -> find_matching_par_index(R, Inde
 %% and retuns a parsed expr: {minus,{plus,2,3},{minus,5,2}}
 
 parse_int({num, N}) -> {num, N};
-parse_int([{num, N}]) -> {num, N};
 parse_int([ExprA, {dual_oper, Oper}, ExprB]) -> {Oper, parse_int(ExprA), parse_int(ExprB)};
 parse_int([{sing_oper, Oper}, Expr]) -> {Oper, parse_int(Expr)};
 parse_int([Expr]) -> parse_int(Expr).
@@ -93,4 +93,5 @@ evaluate_int({num, N}) -> N;
 evaluate_int({negative, Expr}) -> -1*evaluate_int(Expr);
 evaluate_int({plus, ExprA, ExprB}) -> evaluate_int(ExprA) + evaluate_int(ExprB);
 evaluate_int({minus, ExprA, ExprB}) -> evaluate_int(ExprA) - evaluate_int(ExprB);
-evaluate_int({multiply, ExprA, ExprB}) -> evaluate_int(ExprA) * evaluate_int(ExprB).
+evaluate_int({multiply, ExprA, ExprB}) -> evaluate_int(ExprA) * evaluate_int(ExprB);
+evaluate_int({divide, ExprA, ExprB}) -> evaluate_int(ExprA) div evaluate_int(ExprB).
