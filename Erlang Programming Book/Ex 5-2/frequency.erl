@@ -55,9 +55,12 @@ reply(Pid, Reply) ->
 %% deallocate frequencies.
 
 allocate({[], Allocated}, _Pid) ->
-  {{[], Allocated}, {error, no_frequency}};
+  {{[], Allocated}, {error, no_frequency_available}};
 allocate({[Freq|Free], Allocated}, Pid) ->
-  {{Free, [{Freq, Pid}|Allocated]}, {ok, Freq}}.
+  case allocatedFrequenciesForPid(Pid, Allocated) >= 3 of
+    true  -> {{[Freq|Free], Allocated}, {error, exceeded_limit}};
+    false -> {{Free, [{Freq, Pid}|Allocated]}, {ok, Freq}}
+  end.
 
 deallocate({Free, Allocated}, Freq, Pid) ->
   NewAllocated = lists:delete({Freq, Pid}, Allocated),
@@ -68,3 +71,6 @@ deallocate({Free, Allocated}, Freq, Pid) ->
 
 any_allocated_frequency({_, []}) -> false;
 any_allocated_frequency(_)       -> true.
+
+allocatedFrequenciesForPid(Pid, Allocated) ->
+  length(lists:filter(fun(Elm) -> element(2, Elm) =:= Pid end, Allocated)).
