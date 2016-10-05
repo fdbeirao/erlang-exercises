@@ -1,7 +1,9 @@
 -module(event_manager).
--export([start/2, stop/1]). % management API
--export([add_handler/3, delete_handler/2, get_data/2, send_event/2]). % public API
--export([init/1]). % process API
+-export([start/2, stop/1]). % Admin API
+-export([add_handler/3, delete_handler/2, get_data/2, send_event/2]). % Public API
+-export([init/1]). % Process API
+
+%% Admin API
 
 start(Name, HandlerList) ->
   register(Name, spawn(?MODULE, init, [HandlerList])), ok.
@@ -10,16 +12,7 @@ stop(Name) ->
   Name ! {stop, self()},
   receive {reply, Reply} -> Reply end.
 
-init(HandlerList) ->
-  loop(initialize(HandlerList)).
-
-initialize([]) -> [];
-initialize([{Handler, InitData}|Rest]) ->
-  [{Handler, Handler:init(InitData)}|initialize(Rest)].
-
-terminate([]) -> [];
-terminate([{Handler, Data}|Rest]) ->
-  [{Handler, Handler:terminate(Data)}|terminate(Rest)].
+%% Public API
 
 add_handler(Name, Handler, InitData) ->
   call(Name, {add_handler, Handler, InitData}).
@@ -32,6 +25,21 @@ get_data(Name, Handler) ->
 
 send_event(Name, Event) ->
   call(Name, {send_event, Event}).
+
+%% Process API
+
+init(HandlerList) ->
+  loop(initialize(HandlerList)).
+
+%% Private functionss
+
+initialize([]) -> [];
+initialize([{Handler, InitData}|Rest]) ->
+  [{Handler, Handler:init(InitData)}|initialize(Rest)].
+
+terminate([]) -> [];
+terminate([{Handler, Data}|Rest]) ->
+  [{Handler, Handler:terminate(Data)}|terminate(Rest)].
 
 handle_msg({add_handler, Handler, InitData}, LoopData) ->
   {ok, [{Handler, Handler:init(InitData)}|LoopData]};
