@@ -10,23 +10,31 @@ init(ChildSpecList) ->
   loop(start_children(ChildSpecList)).
 
 start_children([]) -> [];
-start_children([{M, F, A} | ChildSpecList]) ->
+start_children([{M, F, A, T} | ChildSpecList]) ->
   case (catch apply(M, F, A)) of
     {ok, Pid} ->
-      [{Pid, {M, F, A}}|start_children(ChildSpecList)];
+      [{Pid, {M, F, A, T}}|start_children(ChildSpecList)];
     _ ->
       start_children(ChildSpecList)
   end.
 
-restart_child(Pid, ChildList) ->
-  {value, {Pid, {M, F, A}}} = lists:keysearch(Pid, 1, ChildList),
-  {ok, NewPid} = apply(M, F, A),
-  [{NewPid, {M,F,A}}|lists:keydelete(Pid, 1, ChildList)].
+child_died(Pid, ChildList) ->
+  {value, {Pid, {M, F, A, T}}} = lists:keysearch(Pid, 1, ChildList),
+  case T of
+    transient -> 
+      remove_child(Pid, ChildList);
+    permanent -> 
+      {ok, NewPid} = apply(M, F, A),
+      [{NewPid, {M,F,A}}|remove_child(Pid, ChildList)]
+  end.
+
+remove_child(Pid, ChildList) ->
+  lists:keydelete(Pid, 1, ChildList).
 
 loop(ChildList) ->
   receive
     {'EXIT', Pid, _Reason } ->
-      NewChildList = restart_child(Pid, ChildList),
+      NewChildList = child_died(Pid, ChildList),
       loop(NewChildList);
     {stop, From} ->
       From ! {reply, terminate(ChildList)}
