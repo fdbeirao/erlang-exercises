@@ -10,28 +10,38 @@ stop() ->
   global:send(?MODULE, stop).
 
 wait() ->
+  MutexPid = global:whereis_name(?MODULE),
+  MonitorRef = erlang:monitor(process, MutexPid),
   global:send(?MODULE, {wait, self()}),
-  receive ok -> ok end.
+  receive 
+    ok -> ok;
+    {'DOWN', MonitorRef, process, _Object, _Info} -> exit(self(), mutex_not_available) 
+  end.
 
 signal() ->
   global:send(?MODULE, {signal, self()}), 
   ok.
 
 init() ->
+  process_flag(trap_exit, true),
   free().
 
 free() ->
   receive
     {wait, Pid} ->
+      MonitorRef = erlang:monitor(process, Pid),
       Pid ! ok,
-      busy(Pid);
+      busy(Pid, MonitorRef);
     stop ->
       terminate()
   end.
 
-busy(Pid) ->
+busy(Pid, MonitorRef) ->
   receive
     {signal, Pid} ->
+      erlang:demonitor(MonitorRef),
+      free();
+    {'DOWN', MonitorRef, process, _Object, _Info} ->
       free()
   end.
 
