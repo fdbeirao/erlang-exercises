@@ -11,22 +11,30 @@ init(ChildSpecList) ->
 
 start_children([]) -> [];
 start_children([{M, F, A, T} | ChildSpecList]) ->
-  case (catch apply(M, F, A)) of
-    {ok, Pid} ->
-      [{Pid, {M, F, A, T}}|start_children(ChildSpecList)];
-    _ ->
-      start_children(ChildSpecList)
-  end.
+  [start_child(M, F, A, T, 0, fun now/0)|start_children(ChildSpecList)].
+
+start_child(M, F, A, T, R, Now) ->
+  {ok, Pid} = apply(M, F, A),
+  {Pid, {M, F, A}, T, R + 1, Now()}.
+
+now() ->
+  erlang:monotonic_time(seconds).
+
+try_restart({Pid, {M, F, A}, T, R, LRT}, ChildList, Now) when T == permanent andalso R =< 5 ->
+  TimeDiff = Now() - LRT,
+  if 
+    TimeDiff =< 5 ->
+      [start_child(M, F, A, T, R, Now)|remove_child(Pid, ChildList)];
+    true -> 
+      remove_child(Pid, ChildList)
+  end;
+
+try_restart({Pid, {_M, _F, _A}, _T, _R, _LRT}, ChildList, _Now) ->
+  remove_child(Pid, ChildList).
 
 child_died(Pid, ChildList) ->
-  {value, {Pid, {M, F, A, T}}} = lists:keysearch(Pid, 1, ChildList),
-  case T of
-    transient -> 
-      remove_child(Pid, ChildList);
-    permanent -> 
-      {ok, NewPid} = apply(M, F, A),
-      [{NewPid, {M,F,A}}|remove_child(Pid, ChildList)]
-  end.
+  {value, Child} = lists:keysearch(Pid, 1, ChildList),
+  try_restart(Child, ChildList, fun now/0).
 
 remove_child(Pid, ChildList) ->
   lists:keydelete(Pid, 1, ChildList).
