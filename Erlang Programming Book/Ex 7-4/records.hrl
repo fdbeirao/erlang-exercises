@@ -1,2 +1,3 @@
 -record(circle, {radius}).
 -record(rectangle, {length, width}).
+-record(triangle, {side1, side2, side3}).
