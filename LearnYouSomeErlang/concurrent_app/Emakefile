@@ -1,0 +1,6 @@
+{'src/*', [debug_info,        %% Add debug info
+           { i, "src" },      %% Look for files in src/
+           { i, "include" },  %% Look for files in include/
+           { outdir, "ebin" } %% Output build files into ebin/
+          ]
+}.
