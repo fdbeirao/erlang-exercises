@@ -1,6 +1,6 @@
 %%%% Taken from http://learnyousomeerlang.com/designing-a-concurrent-application
 
--module(event).
+-module(reminder_event).
 -compile(export_all).
 -record(state, { server, name="", to_go=0 }).
 
