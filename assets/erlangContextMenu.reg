@@ -1,0 +1,20 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlmake]
+@="Emake and open werl here"
+"Icon"="\"werl.exe\""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlmake\command]
+@="\"C:\\Program Files\\erl8.2\\bin\\werl.exe\" -eval \"make:all()\""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlshell]
+@="Open werl here"
+"Icon"="\"werl.exe\""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlshell\command]
+@="\"C:\\Program Files\\erl8.2\\bin\\werl.exe\""
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\ErlangMenu]
+"Icon"="\"C:\\Program Files\\erl8.2\\bin\\werl.exe\""
+"SubCommands"="werlmake;werlshell"
+"MUIVerb"="Erlang"

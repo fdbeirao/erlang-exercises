@@ -1,5 +1,23 @@
 # Fábio's Erlang scrapbook
 
+## A better context menu
+
+So I found out that erlang comes with its own [make](http://erlang.org/doc/man/make.html).
+
+This lead me to the creation of a little more advanced context menu from the one I specified bellow.
+
+It now looks like this:
+
+![Erlang in the context menu](imgs/erlangContextMenu2.png)
+
+The registry magic is getting a whole lot more ellaborate, so this time I will share the [registry file](assets/erlangContextMenu.reg) instead of the steps.
+
+Credit where credit is due, I got the steps from [here](http://www.askvg.com/add-cascading-menus-for-your-favorite-programs-in-windows-7-desktop-context-menu/).
+
+Keep on going and let it fail.
+
+Fábio Beirão - 25/Jan/2017
+
 ## Make, remake, erlang.mk, whoa!
 
 It really has not been easy this learning curve. Everywhere I look there is more and more to learn, and I just realize how little (or nothing) I actually know. That is good, but it takes a toll on you.
