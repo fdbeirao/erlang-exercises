@@ -5,7 +5,7 @@ Windows Registry Editor Version 5.00
 "Icon"="\"werl.exe\""
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlmake\command]
-@="\"C:\\Program Files\\erl8.2\\bin\\werl.exe\" -eval \"make:all([load])\""
+@="cmd.exe /c pushd \"%V\" & rmdir /S /Q ebin & mkdir ebin & start \"Werl\" /B \"C:\\Program Files\\erl8.2\\bin\\werl.exe\" -eval \"make:all([load])\""
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\werlshell]
 @="Open werl here"
