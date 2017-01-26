@@ -42,9 +42,12 @@ running({ call, From }, { execute, "exit", _Args }, _Data) ->
   { stop_and_reply, normal, [exit_reply(From, "Goodbye")] };
 
 running({ call, From }, { execute, "time", _Args }, Data) ->
-  {{Year, Month, Day}, {Hour, Minute, Second}} = calendar:now_to_universal_time(erlang:timestamp()),
-  FormattedTime = io_lib:format("UTC time: ~4..0B/~2..0B/~2..0B ~2..0B:~2..0B:~2..0B", [Year, Month, Day, Hour, Minute, Second]),
-  { keep_state, Data, [normal_reply(From, FormattedTime)] };
+  get_current_time(),
+  { keep_state, Data, [normal_reply(From, get_current_time())] };
+
+running({ call, From }, { execute, "look", _Args }, Data) ->
+  Reply = "You see an empty room, waiting to be filled.",
+  { keep_state, Data, [normal_reply(From, Reply)] };
 
 running(EventType, EventContent, Data) ->
   handle_event(EventType, EventContent, Data).
@@ -64,3 +67,7 @@ exit_reply(To, Message) ->
 
 normal_reply(To, Message) ->
   { reply, To, { reply, Message } }.
+
+get_current_time() ->
+  {{Year, Month, Day}, {Hour, Minute, Second}} = calendar:now_to_universal_time(erlang:timestamp()),
+  io_lib:format("UTC time: ~4..0B/~2..0B/~2..0B ~2..0B:~2..0B:~2..0B", [Year, Month, Day, Hour, Minute, Second]).
