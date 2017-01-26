@@ -7,28 +7,50 @@
 
 -define(PROMPT, "> ").
 
+-record(state, { socket, mirePid }).
+
 % tcp_server callback
 
 init(Socket) ->
+  MirePid = init_mire_statem(),
   init_receiver(Socket, self()),
-  to_socket(Socket, ?PROMPT),
-  loop(Socket).
+  show_prompt(Socket),
+  loop(#state{ socket = Socket, mirePid = MirePid }).
 
-loop(Socket) ->
+loop(#state{ socket = Socket, mirePid = MirePid } = State) ->
   receive
-    { from_socket, Message } ->
-      self() ! { to_socket, Message },
-      loop(Socket);
-    { to_socket, Message } ->
-      to_socket(Socket, Message),
-      to_socket(Socket, ?PROMPT),
-      loop(Socket);
+    { from_socket, RawInput } ->
+      { Command, Args } = parse_input(RawInput),
+      CommandResult = mire_statem:execute(MirePid, Command, Args),
+      case CommandResult of
+        { reply, Reply } ->
+          reply(Socket, Reply),
+          show_prompt(Socket),
+          loop(State);
+        { exit, Message } ->
+          reply(Socket, Message)
+      end;
     { error, Reason } ->
       io:format("Error. Reason: [~p]~n", [Reason])
   end.
 
+reply(Socket, Message) ->
+  to_socket(Socket, Message),
+  to_socket(Socket, "\r\n").
+
+show_prompt(Socket) ->
+  to_socket(Socket, ?PROMPT).
+
 to_socket(Socket, Data) ->
   gen_tcp:send(Socket, Data).
+
+init_mire_statem() ->
+  mire_statem:start().
+
+parse_input(RawInput) ->
+  CleanInput = re:replace(RawInput, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
+  [Command|Args] = string:tokens(CleanInput, " "),
+  { Command, Args }.
 
 % socket_receiver functions
 
