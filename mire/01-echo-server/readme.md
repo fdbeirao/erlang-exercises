@@ -1,6 +1,6 @@
 # Step 1: a simple echo server
 
-Start the echo_handler on a specific port, connect to it with your favourite telnet client and have the most boring conversation with yourself.
+Start the `echo_handler` on a specific port, connect to this port with your favourite telnet client and have the most boring conversation with yourself.
 
 ### Make command (Windows)
 
@@ -19,4 +19,4 @@ ok
 
 ### Features
 
-Once a client connects, his connection remains active and valid even if the echo_handler is stopped.
+* Once a client connects, his connection remains active and valid even if the echo_handler is stopped.
