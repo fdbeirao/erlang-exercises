@@ -1,9 +1,0 @@
-[{release,"hello_erlang_release","1","8.0",
-          [{stdlib,"3.0","./lib/stdlib-3.0"},
-           {kernel,"5.0","./lib/kernel-5.0"},
-           {crypto,"3.7","./lib/crypto-3.7"},
-           {cowlib,"1.0.2","./lib/cowlib-1.0.2"},
-           {ranch,"1.2.1","./lib/ranch-1.2.1"},
-           {cowboy,"1.0.4","./lib/cowboy-1.0.4"},
-           {hello_erlang,"0.0.1","./lib/hello_erlang-0.0.1"}],
-          permanent}].
